@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Help | FarmWeather Advisor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-green-50 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-green-700 text-white py-4">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">FarmWeather Advisor</h1>
+      <nav class="flex space-x-4">
+        <a href="index.php" class="hover:underline">Home</a>
+        <a href="advice.html" class="hover:underline">Crop Advice</a>
+        <a href="forecast.html" class="hover:underline">Forecast</a>
+        <a href="history.html" class="hover:underline">History</a>
+        <a href="fertilizer.html" class="hover:underline">Fertilizer</a>
+        <a href="help.html" class="hover:underline font-semibold underline">Help</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8">
+    <h2 class="text-2xl font-semibold text-green-800 mb-6">Help & Support</h2>
+
+    <!-- FAQ Section -->
+    <div class="space-y-4">
+      <div class="bg-white rounded-lg shadow p-4">
+        <button onclick="toggleAnswer('faq1')" class="text-left w-full text-lg font-medium text-green-700">
+          How do I get weather information for my area?
+        </button>
+        <p id="faq1" class="hidden mt-2 text-gray-700">Go to the Dashboard and enter your location to fetch the latest weather data using the Get Weather button.</p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <button onclick="toggleAnswer('faq2')" class="text-left w-full text-lg font-medium text-green-700">
+          Can I get crop advice based on the weather?
+        </button>
+        <p id="faq2" class="hidden mt-2 text-gray-700">Yes! Navigate to the Crop Advice page and select your crop to receive weather-specific guidance.</p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <button onclick="toggleAnswer('faq3')" class="text-left w-full text-lg font-medium text-green-700">
+          What if the data isn't showing or I'm getting an error?
+        </button>
+        <p id="faq3" class="hidden mt-2 text-gray-700">Make sure your internet is active and the API key is valid. You can also check your browser console for error logs.</p>
+      </div>
+    </div>
+
+    <!-- Help Form Section -->
+    <div class="mt-10 bg-white rounded-lg shadow p-6">
+      <h3 class="text-xl font-semibold text-green-800 mb-4">Submit a Help Request</h3>
+      <form action="help.php" method="POST" class="space-y-4">
+        <input type="text" name="name" placeholder="Your Name" required class="border p-2 w-full rounded" />
+        <input type="text" name="phone" placeholder="Phone Number" required class="border p-2 w-full rounded" />
+        <textarea name="message" placeholder="Describe your issue or question" required class="border p-2 w-full rounded h-32"></textarea>
+        <button type="submit" class="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800">Submit Request</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Toggle FAQ Script -->
+  <script>
+    function toggleAnswer(id) {
+      const ans = document.getElementById(id);
+      ans.classList.toggle('hidden');
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather Forecast</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-b from-blue-50 to-green-100 min-h-screen">
+  <header class="bg-green-700 text-white py-4 shadow-md">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">FarmWeather Advisor</h1>
+      <nav class="space-x-4">
+        <a href="index.php" class="hover:underline">Home</a>
+        <a href="advice.html" class="hover:underline">Crop Advice</a>
+        <a href="forecast.html" class="underline font-semibold">Forecast</a>
+        <a href="history.html" class="hover:underline">History</a>
+        <a href="help.html" class="hover:underline">Help</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-10">
+    <h2 class="text-3xl text-green-800 font-bold mb-6">3-Day Weather Forecast</h2>
+    
+    <div class="flex flex-col md:flex-row gap-4 mb-6">
+      <input
+        type="text"
+        id="forecastLocation"
+        placeholder="Enter your location"
+        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+        onkeypress="if(event.key==='Enter') getForecast()"
+      />
+      <button
+        onclick="getForecast()"
+        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        Show Forecast
+      </button>
+      <button
+        onclick="useMyLocation()"
+        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        Use My Location
+      </button>
+    </div>
+
+    <div id="forecastResults" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- JavaScript will display the forecast here -->
+    </div>
+  </main>
+
+  <script>
+    const apiKey = "dabf333843332f83f4f982afee3626ac";
+
+    async function getForecast(location = null, lat = null, lon = null) {
+      const forecastContainer = document.getElementById("forecastResults");
+      forecastContainer.innerHTML = "";
+
+      let url = "";
+
+      if (lat && lon) {
+        url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+      } else {
+        location = document.getElementById('forecastLocation').value.trim();
+        if (!location) {
+          alert("Please enter a location.");
+          return;
+        }
+        url = `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${apiKey}&units=metric`;
+      }
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.list) {
+          forecastContainer.innerHTML = "<p class='text-red-600'>Could not fetch forecast. Check the location name.</p>";
+          return;
+        }
+
+        for (let i = 0; i < 24; i += 8) {
+          const dayData = data.list[i];
+          const date = new Date(dayData.dt_txt).toDateString();
+          const temp = dayData.main.temp;
+          const desc = dayData.weather[0].main;
+          const humidity = dayData.main.humidity;
+
+          const card = `
+            <div class="bg-white rounded-lg shadow-md p-6">
+              <h3 class="font-bold text-lg mb-2">${date}</h3>
+              <p class="text-gray-700">Temp: <strong>${temp}°C</strong></p>
+              <p class="text-gray-700">Condition: ${desc}</p>
+              <p class="text-gray-700">Humidity: ${humidity}%</p>
+            </div>
+          `;
+          forecastContainer.innerHTML += card;
+        }
+      } catch (err) {
+        forecastContainer.innerHTML = "<p class='text-red-600'>An error occurred while fetching the forecast.</p>";
+      }
+    }
+
+    function useMyLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            getForecast(null, lat, lon);
+          },
+          () => {
+            alert("Unable to retrieve your location.");
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+  </script>
+</body>
+</html>

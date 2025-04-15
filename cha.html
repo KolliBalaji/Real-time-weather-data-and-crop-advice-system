@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FarmWeather Advisor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-gradient-to-b from-green-50 to-blue-50">
+    <div class="container mx-auto px-4 py-8">
+      <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-green-800 mb-2">FarmWeather Advisor</h1>
+        <p class="text-gray-600">Real-time weather insights and crop recommendations</p>
+      </header>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div class="flex flex-wrap gap-4 mb-6">
+            <input
+              id="location"
+              type="text"
+              placeholder="Enter your location"
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              onkeypress="if(event.key === 'Enter') fetchWeatherData()"
+            />
+            <button
+              id="getWeatherBtn"
+              onclick="fetchWeatherData()"
+              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Get Weather
+            </button>
+            <button
+              onclick="fetchWeatherByGPS()"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Use My Location
+            </button>
+          </div>
+
+          <div id="weatherDisplay"></div>
+          <div id="placeholder" class="text-center text-gray-600">
+            Enter your location or use GPS to get weather info and crop advice.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const apiKey = "dabf333843332f83f4f982afee3626ac";
+
+      async function fetchWeatherByGPS() {
+        if (!navigator.geolocation) {
+          alert("Geolocation is not supported by your browser.");
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+
+            try {
+              // Reverse geocode to get city name
+              const geoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${apiKey}`;
+              const geoResponse = await fetch(geoUrl);
+              const geoData = await geoResponse.json();
+
+              if (!geoData.length) throw new Error("City not found");
+
+              const city = geoData[0].name;
+              document.getElementById("location").value = city;
+
+              fetchWeatherData(latitude, longitude, city);
+            } catch (error) {
+              alert("Could not determine your city. Try entering it manually.");
+              console.error(error);
+            }
+          },
+          (error) => {
+            alert("Location access denied. Please enter manually.");
+            console.error(error);
+          }
+        );
+      }
+
+      async function fetchWeatherData(lat = null, lon = null, cityFromGPS = null) {
+        const locationInput = document.getElementById("location");
+        const loadingBtn = document.getElementById("getWeatherBtn");
+        loadingBtn.innerText = "Loading...";
+        loadingBtn.disabled = true;
+
+        try {
+          let city = cityFromGPS;
+          if (!lat || !lon) {
+            city = locationInput.value.trim();
+            if (!city) {
+              alert("Please enter a location");
+              loadingBtn.innerText = "Get Weather";
+              loadingBtn.disabled = false;
+              return;
+            }
+
+            const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${city},IN&limit=1&appid=${apiKey}`;
+            const geoResponse = await fetch(geoUrl);
+            const geoData = await geoResponse.json();
+
+            if (!geoData.length) throw new Error("Location not found");
+
+            lat = geoData[0].lat;
+            lon = geoData[0].lon;
+            city = geoData[0].name;
+          }
+
+          const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+          const weatherResponse = await fetch(weatherUrl);
+          if (!weatherResponse.ok) throw new Error("Weather fetch failed");
+
+          const data = await weatherResponse.json();
+
+          const weather = {
+            city: city,
+            temperature: data.main.temp,
+            humidity: data.main.humidity,
+            windSpeed: (data.wind.speed * 3.6).toFixed(1), // m/s to km/h
+            conditions: data.weather[0].description
+          };
+
+          showWeatherData(weather);
+          document.getElementById("placeholder").style.display = "none";
+        } catch (error) {
+          alert("Could not fetch weather data.");
+          console.error(error);
+        }
+
+        loadingBtn.innerText = "Get Weather";
+        loadingBtn.disabled = false;
+      }
+
+      function showWeatherData(weather) {
+        document.getElementById("weatherDisplay").innerHTML = `
+          <div class="space-y-6">
+            <h2 class="text-xl font-semibold text-center mb-4 text-green-800">${weather.city} Weather</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">Temperature</h3>
+                <p class="text-2xl">${weather.temperature}°C</p>
+              </div>
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">Humidity</h3>
+                <p class="text-2xl">${weather.humidity}%</p>
+              </div>
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">Wind Speed</h3>
+                <p class="text-2xl">${weather.windSpeed} km/h</p>
+              </div>
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">Conditions</h3>
+                <p class="text-2xl capitalize">${weather.conditions}</p>
+              </div>
+            </div>
+            <div class="bg-green-50 p-6 rounded-lg">
+              <h3 class="font-semibold text-lg mb-2">Crop Advice</h3>
+              <p class="text-gray-700">${getCropAdvice(weather)}</p>
+            </div>
+            <div class="bg-yellow-50 p-6 rounded-lg">
+              <h3 class="font-semibold text-lg mb-2">Weather Alert</h3>
+              <p class="text-gray-700">${getWeatherAlert(weather)}</p>
+            </div>
+          </div>`;
+      }
+
+      function getCropAdvice(weather) {
+        if (weather.temperature > 35) return "Very high temperature detected. Use shade nets and increase irrigation.";
+        if (weather.temperature > 30) return "High temperature. Provide shade and increase watering.";
+        if (weather.humidity > 80) return "High humidity. Watch for fungal issues and ventilate crops.";
+        if (weather.windSpeed > 20) return "Strong winds. Protect sensitive plants and delay spraying.";
+        if (weather.conditions.includes("rain")) return "Rain forecast. Avoid fertilizer and check soil moisture.";
+        return "Weather is good. Continue normal farming activities.";
+      }
+
+      function getWeatherAlert(weather) {
+        if (weather.temperature > 35) return "HEAT ALERT: Extreme heat may harm crops.";
+        if (weather.humidity > 85) return "HUMIDITY ALERT: Disease risk due to moisture.";
+        if (weather.windSpeed > 25) return "WIND ALERT: Strong winds may damage plants.";
+        if (weather.conditions.includes("heavy rain")) return "RAIN ALERT: Heavy rain may cause waterlogging.";
+        return "No severe alerts. Ideal for farming tasks.";
+      }
+    </script>
+  </body>
+</html>

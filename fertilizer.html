@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fertilizer Recommendations</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .card-shadow {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-green-50 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-green-700 text-white py-6">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-3xl font-bold">Fertilizer Recommendations</h1>
+      <a href="index.php" class="text-lg font-medium hover:underline">Back to Dashboard</a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-10">
+    <div class="bg-white shadow-lg rounded-xl p-8 card-shadow fade-in">
+      <div class="mb-6">
+        <label class="block text-gray-800 font-semibold mb-3 text-lg">Select Crop:</label>
+        <div class="relative">
+          <select id="crop" class="w-full bg-white border-2 border-green-300 rounded-lg py-2 px-4 shadow-md focus:outline-none focus:ring-2 focus:ring-green-400">
+            <option value="">-- Choose a Crop --</option>
+            <option value="wheat">Wheat</option>
+            <option value="rice">Rice</option>
+            <option value="maize">Maize</option>
+            <option value="cotton">Cotton</option>
+            <option value="sugarcane">Sugarcane</option>
+            <option value="barley">Barley</option>
+            <option value="soybean">Soybean</option>
+            <option value="millets">Millets</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-gray-800 font-semibold mb-3 text-lg">Select Soil Type:</label>
+        <div class="relative">
+          <select id="soil" class="w-full bg-white border-2 border-green-300 rounded-lg py-2 px-4 shadow-md focus:outline-none focus:ring-2 focus:ring-green-400">
+            <option value="">-- Choose Soil Type --</option>
+            <option value="loamy">Loamy</option>
+            <option value="clay">Clay</option>
+            <option value="sandy">Sandy</option>
+            <option value="black">Black Soil</option>
+            <option value="red">Red Soil</option>
+            <option value="alluvial">Alluvial Soil</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-gray-800 font-semibold mb-3 text-lg">Select State:</label>
+        <div class="relative">
+          <select id="stateSelect" class="w-full bg-white border-2 border-green-300 rounded-lg py-2 px-4 shadow-md focus:outline-none focus:ring-2 focus:ring-green-400">
+            <option value="">-- Choose State --</option>
+            <option value="andhra">Andhra Pradesh</option>
+            <option value="karnataka">Karnataka</option>
+          </select>
+        </div>
+      </div>
+
+      <button onclick="getFertilizer()" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition-all transform hover:scale-105">
+        Get Recommendation
+      </button>
+
+      <div id="recommendation" class="mt-6 p-4 bg-green-100 rounded-lg hidden transition-all fade-in">
+        <p class="font-semibold text-green-800 text-xl">Recommended Fertilizer:</p>
+        <p id="fertilizerText" class="mt-2 text-gray-700 text-lg"></p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const stateFertilizerData = {
+      andhra: {
+        wheat: {
+          fertilizer: "Urea + DAP",
+          dosage: "120kg N, 60kg P2O5 per hectare",
+          timing: "Split application: 1/3 at sowing, 1/3 at tillering, 1/3 at flowering",
+          water: "450-650mm, 4-5 irrigations"
+        },
+        rice: {
+          fertilizer: "MOP + SSP",
+          dosage: "100kg N, 50kg P2O5, 50kg K2O per hectare",
+          timing: "Split application: 1/3 at transplanting, 1/3 at tillering, 1/3 at panicle initiation",
+          water: "1000-2000mm, continuous flooding"
+        },
+        maize: {
+          fertilizer: "NPK 20:20:0",
+          dosage: "120kg N, 60kg P2O5, 40kg K2O per hectare",
+          timing: "Split application: 1/3 at sowing, 1/3 at knee-high, 1/3 at tasseling",
+          water: "500-800mm, 6-8 irrigations"
+        }
+      },
+      karnataka: {
+        wheat: {
+          fertilizer: "DAP + Potash",
+          dosage: "100kg N, 50kg P2O5, 40kg K2O per hectare",
+          timing: "Split application: 1/3 at sowing, 1/3 at tillering, 1/3 at flowering",
+          water: "400-600mm, 3-4 irrigations"
+        },
+        rice: {
+          fertilizer: "Urea + MOP",
+          dosage: "80kg N, 40kg P2O5, 40kg K2O per hectare",
+          timing: "Split application: 1/3 at transplanting, 1/3 at tillering, 1/3 at panicle initiation",
+          water: "900-1500mm, continuous flooding"
+        },
+        maize: {
+          fertilizer: "NPK 12:32:16",
+          dosage: "100kg N, 50kg P2O5, 30kg K2O per hectare",
+          timing: "Split application: 1/3 at sowing, 1/3 at knee-high, 1/3 at tasseling",
+          water: "450-700mm, 5-7 irrigations"
+        }
+      }
+    };
+
+    function getFertilizer() {
+      const crop = document.getElementById('crop').value;
+      const soil = document.getElementById('soil').value;
+      const output = document.getElementById('fertilizerText');
+      const box = document.getElementById('recommendation');
+
+      if (!crop || !soil) {
+        alert("Please select both crop and soil type.");
+        return;
+      }
+
+      let fertilizer = "NPK (Generic)";
+      let dosage = "Standard dosage";
+      let timing = "Standard timing";
+      let water = "Standard water requirement";
+
+      // Get state-specific data if available
+      const state = document.getElementById('stateSelect')?.value;
+      if (state && stateFertilizerData[state]?.[crop]) {
+        const stateData = stateFertilizerData[state][crop];
+        fertilizer = stateData.fertilizer;
+        dosage = stateData.dosage;
+        timing = stateData.timing;
+        water = stateData.water;
+      } else {
+        // Generic recommendations based on soil type
+        if (crop === "wheat" && soil === "loamy") {
+          fertilizer = "Urea + DAP";
+          dosage = "120kg N, 60kg P2O5 per hectare";
+          timing = "Split application: 1/3 at sowing, 1/3 at tillering, 1/3 at flowering";
+          water = "450-650mm, 4-5 irrigations";
+        } else if (crop === "rice" && soil === "clay") {
+          fertilizer = "MOP + SSP";
+          dosage = "100kg N, 50kg P2O5, 50kg K2O per hectare";
+          timing = "Split application: 1/3 at transplanting, 1/3 at tillering, 1/3 at panicle initiation";
+          water = "1000-2000mm, continuous flooding";
+        } else if (crop === "maize" && soil === "sandy") {
+          fertilizer = "NPK 20:20:0";
+          dosage = "120kg N, 60kg P2O5, 40kg K2O per hectare";
+          timing = "Split application: 1/3 at sowing, 1/3 at knee-high, 1/3 at tasseling";
+          water = "500-800mm, 6-8 irrigations";
+        }
+      }
+
+      output.innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <p class="font-semibold text-green-700">Recommended Fertilizer:</p>
+            <p>${fertilizer}</p>
+          </div>
+          <div>
+            <p class="font-semibold text-green-700">Dosage:</p>
+            <p>${dosage}</p>
+          </div>
+          <div>
+            <p class="font-semibold text-green-700">Application Timing:</p>
+            <p>${timing}</p>
+          </div>
+          <div>
+            <p class="font-semibold text-green-700">Water Requirements:</p>
+            <p>${water}</p>
+          </div>
+        </div>
+      `;
+      box.classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>

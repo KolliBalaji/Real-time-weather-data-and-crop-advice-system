@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+  <form action="login.php" method="POST" class="bg-white p-8 rounded shadow-md w-96">
+    <h2 class="text-2xl font-bold mb-4">Login</h2>
+    <input type="text" name="phone" placeholder="Phone" class="w-full p-2 mb-4 border rounded" required>
+    <input type="password" name="password" placeholder="Password" class="w-full p-2 mb-4 border rounded" required>
+    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white w-full p-2 rounded">Login</button>
+    <p class="mt-4 text-sm">Don’t have an account? <a href="signup.html" class="text-green-600">Signup</a></p>
+  </form>
+</body>
+</html>
